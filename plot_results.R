@@ -1,7 +1,20 @@
+Sys.setenv(LANGUAGE='en')
+options(error=traceback)
+
 library(ggplot2)
 library(ggsci)
 
-dat_heu <- read.table("heuristics_entanglement_metadata_expanded.csv", header=T, sep=",")
+img_width <- 1024 * 1.2
+img_height <- 768 * 0.65
+res <- 120
+scale_factor <- 4
+
+# read filename from command line
+args <- commandArgs(trailingOnly=TRUE)
+filename <- args[1]
+
+# read data
+dat_heu <- read.table(filename, header=T, sep=",")
 
 # dat_heu[with(dat_heu, order(network, heuristic, r_auc, no_removal)),]
 # dat_heu [!duplicated(dat_heu[c("network", "heuristic")]),]
@@ -50,13 +63,14 @@ dat[which(dat$heuristic=="network_entanglement_small_reinsertion"),]$heuristic <
 dat[which(dat$heuristic=="vertex_entanglement_reinsertion"),]$heuristic <- "VE + R"
 
 
+color_palette <- pal_aaas()(10)
 
-#https://color-hex.org/color-palettes/189
-my_colors <- c("CI_l_2" = pal_aaas()(10)[1], 
-               "CoreHD" = pal_aaas()(10)[2], 
-               "EI_s1" = pal_aaas()(10)[3], 
-               "GDM" = pal_aaas()(10)[4],
-               "GND" = pal_aaas()(10)[5],
+# https://color-hex.org/color-palettes/189
+my_colors <- c("CI_l_2" = color_palette[1],
+               "CoreHD" = color_palette[2],
+               "EI_s1" = color_palette[3],
+               "GDM" = color_palette[4],
+               "GND" = color_palette[5],
                "NE_mid" = "#55d0ff",
                "NE_large" = "#ccf9ff",
                "NE_small" = "#0080bf",
@@ -78,8 +92,12 @@ p_noR <- ggplot(dat[idxs,], aes(no_removal_frac, lcc.norm, color=heuristic)) +
       ggtitle("Without Reinsertion")
 
 
-my_colors2 <- c("GDM + R" = pal_aaas()(10)[4],
-               "GND + R" = pal_aaas()(10)[5],
+png("comparison_no_reinsertion.png", width=img_width * scale_factor, height=img_height * scale_factor, res=res * scale_factor)
+print(p_noR)
+dev.off()
+
+my_colors2 <- c("GDM + R" = color_palette[4],
+               "GND + R" = color_palette[5],
                "NE_mid + R" = "#55d0ff",
                "NE_large + R" = "#ccf9ff",
                "NE_small + R" = "#0080bf",
@@ -101,11 +119,7 @@ p_yesR <- ggplot(dat[idxs,], aes(no_removal_frac, lcc.norm, color=heuristic)) +
       ggtitle("With Reinsertion")
 
 
-scale_factor <- 4
-png("comparison_with_reinsertion.png", width=1024*1.2 * scale_factor, height=768*0.65* scale_factor, res=120* scale_factor)
+png("comparison_with_reinsertion.png", width=img_width * scale_factor, height=img_height * scale_factor, res=res * scale_factor)
 print(p_yesR)
 dev.off()
 
-png("comparison_no_reinsertion.png", width=1024*1.2 * scale_factor, height=768*0.65* scale_factor, res=120* scale_factor)
-print(p_noR)
-dev.off()
