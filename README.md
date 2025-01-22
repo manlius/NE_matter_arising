@@ -14,12 +14,25 @@ python network_dismantling/dismantler.py --heuristics network_entanglement_large
 
 ```
 
+Clone this repository:
+```bash
+git clone https://github.com/manlius/NE_matter_arising.git
+```
+
+Change directory to the root of the repository:
+```bash
+cd NE_matter_arising
+```
+
+
 Then, you can run the following command to reproduce the figures of the paper:
 
 ```bash
-
 # First, convert the output file to a format that can be used by the R plotting scripts
-python ne_matter_arising/convert_output.py out/df/heuristics_entanglement.csv
+python convert_output.py --input <FILE_PATH>
+
+# Example:
+python convert_output.py --file ../review/out/df/heuristics_entanglement.csv
 ```
 
 This will generate a file with an "_extended" suffix, containing a row for each removal step of each heuristic.
