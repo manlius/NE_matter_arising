@@ -1,4 +1,7 @@
 import ast
+import logging
+from argparse import ArgumentParser
+from pathlib import Path
 
 import pandas as pd
 
@@ -49,18 +52,60 @@ def process_csv(file_path):
 
     return expanded_df
 
+if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
 
-# Convert library's output into a standard csv
-file_path = 'heuristics_entanglement_metadata.csv'
-result_df = process_csv(file_path)
-print(result_df.head())
+    logger = logging.getLogger(__name__)
 
-result_df.to_csv(file_path.replace(".csv", "_expanded.csv"), index=False)
+    parser = ArgumentParser()
+    parser.add_argument(
+        "--file",
+        type=Path,
+        default=None,
+        required=True,
+        help="Path to the input CSV file.",
+    )
 
-#
-# # Convert library's output into a standard csv
-# file_path = 'heuristics_entanglement_metadata_lcc.csv'
-# result_df = process_csv(file_path)
-# print(result_df.head())
-#
-# result_df.to_csv( file_path.replace(".csv", "_expanded.csv") , index=False)
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        type=str.upper,
+        choices=["INFO", "DEBUG", "WARNING", "ERROR"],
+        default="info",
+        help="Verbosity level (case insensitive)",
+    )
+
+    args = parser.parse_args()
+
+    logger.setLevel(logging.getLevelName(args.verbose))
+
+    if args.file is None:
+        logger.error("Please provide a file path.")
+        exit(1)
+
+    if not args.file.exists():
+        logger.error(f"File {args.file} does not exist.")
+
+        exit(1)
+
+    if not args.file.is_file():
+        logger.error(f"Path {args.file} is not a file.")
+
+        exit(1)
+
+    # Convert library's output into a standard csv
+    file_path = str(args.file)
+    result_df = process_csv(file_path)
+
+    logger.debug(result_df.head())
+
+    output_file_path = file_path.replace('.csv', '_expanded.csv')
+
+    if Path(output_file_path).exists():
+        logger.warning(f"Output file {output_file_path} already exists. "
+                       f"It will be overwritten."
+                       )
+
+    # Save the expanded DataFrame to a new CSV file
+    result_df.to_csv(str(output_file_path), index=False)
+    logger.info(f"Expanded output file saved to {output_file_path}")
